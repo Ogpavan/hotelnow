@@ -34,7 +34,7 @@ const TestimonialSection = () => {
         {testimonials.map((t, index) => (
           <div
             key={index}
-            className="md:min-w-[250px] max-w-[250px] snap-start bg-white shadow-md rounded-xl p-6 flex-shrink-0 border border-gray-100"
+            className="md:min-w-[250px] max-w-md snap-start bg-white shadow-md rounded-xl p-6 flex-shrink-0 border border-gray-100"
           >
             <p className="text-gray-700 text-sm mb-4 leading-relaxed">
               “{t.feedback}”

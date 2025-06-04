@@ -13,6 +13,7 @@
     "@react-spring/web": "^9.7.5",
     "@tailwindcss/vite": "^4.1.4",
     "date-fns": "^4.1.0",
+    "firebase": "^11.8.1",
     "framer-motion": "^12.10.5",
     "lucide-react": "^0.503.0",
     "react": "^18.3.1",

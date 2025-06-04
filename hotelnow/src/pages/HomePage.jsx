@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase/config";
+import React, { useState } from "react";
+import { useRef } from "react";
 import { IoIosStar } from "react-icons/io";
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
@@ -24,6 +23,8 @@ import { CiCircleChevLeft, CiCircleChevRight } from "react-icons/ci";
 import AnimatedCounter from "./AnimatedCounter";
 import TestimonialSection from "./TestimonialSection";
 import { Link, useNavigate } from "react-router-dom";
+import { db } from "../firebase/config"; // Import Firebase configuration
+import { collection, getDocs } from "firebase/firestore"; // Import Firestore functions
 
 const destinations = [
   [
@@ -89,7 +90,6 @@ function HomePage() {
   const [selectedCity, setSelectedCity] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
   const [guests, setGuests] = useState(1);
-  const [hotels, setHotels] = useState([]);
   const navigate = useNavigate();
   const [dateRange, setDateRange] = useState([
     {
@@ -99,22 +99,6 @@ function HomePage() {
     },
   ]);
 
-  useEffect(() => {
-    const fetchHotels = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "hotels"));
-        const hotelsData = [];
-        querySnapshot.forEach((doc) => {
-          hotelsData.push({ id: doc.id, ...doc.data() });
-        });
-        setHotels(hotelsData);
-      } catch (error) {
-        console.error("Error fetching hotels:", error);
-      }
-    };
-    fetchHotels();
-  }, []);
-
   const handleDateChange = (item) => {
     setDateRange([item.selection]);
     const { startDate, endDate } = item.selection;
@@ -123,21 +107,16 @@ function HomePage() {
     }
   };
 
-  const scrollRef = useRef(null);
-
-  const scroll = (direction) => {
-    const scrollAmount = 300;
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
   const handleChange = (e) => {
     const city = e.target.value;
     setSelectedCity(city);
+  };
+
+  const fetchHotels = async () => {
+    const hotelsCollection = collection(db, "hotels");
+    const hotelSnapshot = await getDocs(hotelsCollection);
+    const hotelList = hotelSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    console.log(hotelList); // You can use this data as needed
   };
 
   return (
@@ -167,9 +146,6 @@ function HomePage() {
             </select>
           </div>
 
-          {/* Divider */}
-          <div className="hidden md:block h-8 w-px bg-gray-200" />
-
           {/* Check-in & Check-out */}
           <div className="flex flex-col w-full md:w-auto relative">
             <span className="text-sm text-gray-500">Check-in & check-out</span>
@@ -194,9 +170,6 @@ function HomePage() {
               </div>
             )}
           </div>
-
-          {/* Divider */}
-          <div className="hidden md:block h-8 w-px bg-gray-200" />
 
           {/* Guests */}
           <div className="flex flex-col w-full md:w-auto">
@@ -287,47 +260,26 @@ function HomePage() {
           className="flex overflow-x-auto space-x-6 hide-scrollbar scroll-smooth"
         >
           {hotels.map((hotel, index) => (
-            <div
-              key={hotel.id || index}
-              className="w-[280px] bg-white rounded-xl overflow-hidden border border-gray-200 "
-            >
-              {/* Hotel Image */}
+            <div key={index} className="min-w-[280px]">
               <img
                 src={hotel.image}
                 alt={hotel.name}
-                className="w-full h-44 object-cover"
+                className="w-full h-44 object-cover rounded-xl mb-2"
               />
-
-              <div className="p-3">
-                {/* Hotel Name */}
-                <h3 className="text-lg font-semibold text-gray-800 truncate">
+              <div className="px-1">
+                <h3 className="text-lg poppins-regular text-gray-800">
                   {hotel.name}
                 </h3>
-
-                {/* Address with Icon */}
-                <div className="flex items-start gap-1 text-sm text-gray-600 mt-1">
-                  <FaMapMarkerAlt className="mt-0.5 text-blue-500" />
-                  <span className="truncate max-w-[230px]">
-                    {hotel.location}
-                  </span>
+                <div className="flex items-center text-sm text-blue-600 poppins-light">
+                  <FaMapMarkerAlt className="mr-1 text-blue-500" />
+                  {hotel.location}
                 </div>
-
-                {/* City + Rating Row */}
-                <div className="flex items-center justify-between mt-2">
-                  <span className="bg-blue-100 text-blue-700 text-xs px-2 py-[2px] rounded-md">
-                    {hotel.city}
-                  </span>
-
-                  <div className="flex items-center text-sm text-gray-700">
+                <div className="flex items-center justify-between text-sm poppins-light">
+                  <div className="flex items-center text-gray-600">
                     <IoIosStar className="text-amber-400 mr-1" />
-                    <span>{hotel.rating}</span>
+                    {hotel.rating}
                   </div>
                 </div>
-
-                {/* Optional CTA */}
-                <button className="mt-3 w-full text-center bg-blue-600 text-white text-sm py-1.5 rounded-md hover:bg-blue-700 transition">
-                  View Details
-                </button>
               </div>
             </div>
           ))}
