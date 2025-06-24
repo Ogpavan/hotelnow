@@ -26,7 +26,7 @@ const testimonials = [
 const TestimonialSection = () => {
   return (
     <section className="px-4 py-6">
-      <h2 className="text-2xl font-semibold text-[#00264d] mb-6">
+      <h2 className="text-xl font-semibold text-[#00264d] mb-6">
         What Our Customers Say
       </h2>
 

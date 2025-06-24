@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { FiSearch, FiMenu, FiX } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
+import { PhoneCallIcon } from "lucide-react";
 
 export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -20,7 +23,9 @@ export default function Navbar() {
         <div className="flex space-x-10 text-gray-600 font-medium mx-auto">
           <div className="flex items-center space-x-1 text-blue-600 cursor-pointer">
             <div className="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>
-            <span>Discover</span>
+            <button className="cursor-pointer" onClick={() => navigate("/")}>
+              <span>Home</span>
+            </button>
           </div>
           <div
             onClick={() => setSearchOpen(true)}
@@ -39,13 +44,15 @@ export default function Navbar() {
             >
               <path d="M12 1a11 11 0 000 22 11 11 0 000-22zm0 4v6l4 2" />
             </svg>
-            <span>Contact Us</span>
+            <Link to="/contact" className="cursor-pointer">
+              <span>Contact</span>
+            </Link>
           </div>
         </div>
 
         {/* Book Now Button */}
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition">
-          Book Now
+        <button className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition flex items-center">
+          <PhoneCallIcon className="w-5 h-5 mr-2" /> Call Now
         </button>
       </nav>
 
@@ -112,7 +119,15 @@ export default function Navbar() {
               />
             </div>
             <div className="flex flex-col space-y-4 text-gray-700 font-medium">
-              <button className="text-left">Discover</button>
+              <button
+                onClick={() => {
+                  navigate("/");
+                  setMenuOpen(false);
+                }}
+                className="text-left"
+              >
+                Home
+              </button>
               <button
                 onClick={() => {
                   setSearchOpen(true);

@@ -4,8 +4,9 @@ import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import HomePage from "./pages/HomePage";
 import HotelList from "./pages/HotelList";
-import AdminPage from "./pages/AdminPage";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
 import HotelDetails from "./pages/HotelDetails";
+import ContactUs from "./pages/ContactUs";
 
 function App() {
   return (
@@ -15,8 +16,9 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/hotels/:city" element={<HotelList />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/hotel/:id" element={<HotelDetails />} />
+          <Route path="/contact" element={<ContactUs />} />
         </Routes>
       </div>
       <Footer />

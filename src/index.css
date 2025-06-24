@@ -1,5 +1,6 @@
-@import "tailwindcss";
+@import "@fontsource/inter/index.css";
 
+@import "tailwindcss";
 
 .primary {
   color: #0080ff;
@@ -13,11 +14,11 @@
 }
 
 body {
+  font-family: "Inter", system-ui, sans-serif;
   background-color: #e3ebf3;
 }
 
-
-.poppins-thin {
+/* .poppins-thin {
   font-family: "Poppins", sans-serif;
   font-weight: 100;
   font-style: normal;
@@ -123,13 +124,12 @@ body {
   font-family: "Poppins", sans-serif;
   font-weight: 900;
   font-style: italic;
-}
-
+} */
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .hide-scrollbar {
   -ms-overflow-style: none; /* IE/Edge */
-  scrollbar-width: none;    /* Firefox */
+  scrollbar-width: none; /* Firefox */
 }

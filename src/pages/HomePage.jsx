@@ -7,89 +7,18 @@ import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { format } from "date-fns";
 import { FaArrowRight, FaMapMarkerAlt, FaSearch } from "react-icons/fa";
-import bangalore from "../assets/Bangalore.webp";
-import mumbai from "../assets/Mumbai.webp";
-import newdelhi from "../assets/NewDelhi.webp";
-import hyderabad from "../assets/Hyderabad.webp";
-import pune from "../assets/Pune.webp";
-import kolkata from "../assets/Kolkata.webp";
-import chennai from "../assets/Chennai.webp";
-import gurgaon from "../assets/Gurgaon.webp";
-import goa from "../assets/Goa.webp";
-import indore from "../assets/Indore.webp";
-import coimbatore from "../assets/Coimbatore.webp";
-import jaipur from "../assets/Jaipur.webp";
-
 import { CiCircleChevLeft, CiCircleChevRight } from "react-icons/ci";
 import AnimatedCounter from "./AnimatedCounter";
 import TestimonialSection from "./TestimonialSection";
 import { Link, useNavigate } from "react-router-dom";
 
-const destinations = [
-  [
-    {
-      name: "Mumbai",
-      img: mumbai,
-    },
-    {
-      name: "Bangalore",
-      img: bangalore,
-    },
-    {
-      name: "New Delhi",
-      img: newdelhi,
-    },
-  ],
-  [
-    {
-      name: "Hyderabad",
-      img: hyderabad,
-    },
-    {
-      name: "Pune",
-      img: pune,
-    },
-    {
-      name: "Kolkata",
-      img: kolkata,
-    },
-  ],
-  [
-    {
-      name: "Chennai",
-      img: chennai,
-    },
-    {
-      name: "Gurgaon",
-      img: gurgaon,
-    },
-    {
-      name: "Goa",
-      img: goa,
-    },
-  ],
-  [
-    {
-      name: "Indore",
-      img: indore,
-    },
-    {
-      name: "Coimbatore",
-      img: coimbatore,
-    },
-    {
-      name: "Jaipur",
-      img: jaipur,
-    },
-  ],
-];
-
 function HomePage() {
-  const cities = ["Delhi", "Mumbai", "Jaipur"];
+  const [cities, setCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
-  const [guests, setGuests] = useState(1);
+  const [guests, setGuests] = useState(2);
   const [hotels, setHotels] = useState([]);
+  const [destinations, setDestinations] = useState([]);
   const navigate = useNavigate();
   const [dateRange, setDateRange] = useState([
     {
@@ -98,6 +27,27 @@ function HomePage() {
       key: "selection",
     },
   ]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  // Fetch cities from Firestore
+  useEffect(() => {
+    const fetchCities = async () => {
+      const snap = await getDocs(collection(db, "cities"));
+      setCities(snap.docs.map((d) => d.data().name));
+    };
+    fetchCities();
+  }, []);
+
+  // Fetch destinations from Firestore
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      const snap = await getDocs(collection(db, "destinations"));
+      setDestinations(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    };
+    fetchDestinations();
+  }, []);
 
   useEffect(() => {
     const fetchHotels = async () => {
@@ -140,10 +90,42 @@ function HomePage() {
     setSelectedCity(city);
   };
 
+  // FAQ data
+  const faqs = [
+    {
+      question: "How do I book a hotel on HotelNow?",
+      answer:
+        "Simply select your city, dates, and number of guests, then click 'Search'. Choose a hotel from the list and follow the booking instructions.",
+    },
+    {
+      question: "Can I cancel or modify my booking?",
+      answer:
+        "Yes, you can cancel or modify your booking from your account dashboard, subject to the hotel's cancellation policy.",
+    },
+    {
+      question: "Are there any hidden charges?",
+      answer:
+        "No, all charges are displayed upfront. Taxes and fees are included in the final price before you confirm your booking.",
+    },
+    {
+      question: "How do I get the best deals?",
+      answer:
+        "Look out for our 'Top Deals' section and subscribe to our newsletter for exclusive offers and discounts.",
+    },
+    {
+      question: "Is my payment information secure?",
+      answer:
+        "Absolutely! We use industry-standard encryption to ensure your payment details are safe and secure.",
+    },
+  ];
+
+  // FAQ expand/collapse state
+  const [openFaq, setOpenFaq] = useState(null);
+
   return (
     <div>
       <section className="min-h-[60vh] flex flex-col items-center justify-center px-4 py-12">
-        <h1 className="text-3xl sm:text-3xl md:text-4xl poppins-bold text-center text-[#00264d] leading-tight">
+        <h1 className="text-3xl sm:text-3xl md:text-4xl font-bold text-center text-[#00264d] leading-tight">
           <span className="text-blue-600">Where</span> are you going to go?
         </h1>
 
@@ -237,24 +219,34 @@ function HomePage() {
 
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl poppins-semibold text-[#00264d] mb-10 text-center md:text-left">
+          <h2 className="text-xl poppins-semibold text-[#00264d] mb-10 text-center md:text-left">
             Popular destinations
           </h2>
 
           <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-y-10 gap-x-8">
-            {destinations.flat().map((dest) => (
+            {destinations.map((dest) => (
               <li
-                key={dest.name}
-                className="flex flex-col items-center text-center poppins-light text-[#00264d]"
+                key={dest.id}
+                className="flex flex-col items-center text-center poppins-light text-[#00264d] cursor-pointer transition hover:scale-105"
               >
-                <img
-                  src={dest.img}
-                  alt={dest.name}
-                  className="w-20 h-20 rounded-full object-cover border border-gray-300 shadow-md mb-3 transition-transform duration-300 hover:scale-105"
-                />
-                <span className="text-base text-[#00264d] poppins-regular">
-                  {dest.name}
-                </span>
+                <Link
+                  to={`/hotels/${dest.name}`}
+                  className="flex flex-col items-center"
+                  state={{
+                    guests,
+                    startDate: dateRange[0].startDate.toISOString(),
+                    endDate: dateRange[0].endDate.toISOString(),
+                  }}
+                >
+                  <img
+                    src={dest.img}
+                    alt={dest.name}
+                    className="w-20 h-20 rounded-full object-cover border border-gray-300 shadow-md mb-3"
+                  />
+                  <span className="text-sm text-[#00264d] poppins-regular">
+                    {dest.name}
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
@@ -263,7 +255,7 @@ function HomePage() {
 
       <section className="px-4 py-10">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl sm:text-2xl poppins-semibold text-gray-800">
+          <h2 className="text-xl  poppins-semibold text-gray-800">
             Top Hotels
           </h2>
           <div className="space-x-1 hidden sm:flex md:mr-5">
@@ -286,56 +278,89 @@ function HomePage() {
           ref={scrollRef}
           className="flex overflow-x-auto space-x-6 hide-scrollbar scroll-smooth"
         >
-          {hotels.map((hotel, index) => (
-            <div
-              key={hotel.id || index}
-              className="w-[280px] bg-white rounded-xl overflow-hidden border border-gray-200 "
-            >
-              {/* Hotel Image */}
-              <img
-                src={hotel.image}
-                alt={hotel.name}
-                className="w-full h-44 object-cover"
-              />
+          {hotels.map((hotel, index) => {
+            // Ensure hotel.image is always an array
+            const images = Array.isArray(hotel.image)
+              ? hotel.image
+              : hotel.image
+              ? [hotel.image]
+              : [];
 
-              <div className="p-3">
-                {/* Hotel Name */}
-                <h3 className="text-lg font-semibold text-gray-800 truncate">
-                  {hotel.name}
-                </h3>
-
-                {/* Address with Icon */}
-                <div className="flex items-start gap-1 text-sm text-gray-600 mt-1">
-                  <FaMapMarkerAlt className="mt-0.5 text-blue-500" />
-                  <span className="truncate max-w-[230px]">
-                    {hotel.location}
-                  </span>
+            return (
+              <div
+                key={hotel.id || index}
+                className="w-[280px] bg-white rounded-xl overflow-hidden border border-gray-200"
+              >
+                {/* Hotel Image */}
+                <div className="relative w-full h-44">
+                  {images.length > 0 ? (
+                    <>
+                      <img
+                        src={images[0]}
+                        alt={hotel.name}
+                        className="w-full h-44 object-cover"
+                      />
+                      <span className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-0.5 rounded">
+                        {images.length} photo{images.length > 1 ? "s" : ""}
+                      </span>
+                    </>
+                  ) : (
+                    <div className="w-full h-44 bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
+                      No Image
+                    </div>
+                  )}
                 </div>
 
-                {/* City + Rating Row */}
-                <div className="flex items-center justify-between mt-2">
-                  <span className="bg-blue-100 text-blue-700 text-xs px-2 py-[2px] rounded-md">
-                    {hotel.city}
-                  </span>
+                <div className="p-3">
+                  {/* Hotel Name */}
+                  <h3 className="text-md font-semibold text-gray-800 truncate">
+                    {hotel.name}
+                  </h3>
 
-                  <div className="flex items-center text-sm text-gray-700">
-                    <IoIosStar className="text-amber-400 mr-1" />
-                    <span>{hotel.rating}</span>
+                  {/* Address with Icon */}
+                  <div className="flex items-start gap-1 text-xs text-gray-600 mt-1">
+                    <FaMapMarkerAlt className="mt-0.5 text-blue-500" />
+                    <span className="truncate max-w-[230px]">
+                      {hotel.location}
+                    </span>
                   </div>
-                </div>
 
-                {/* Optional CTA */}
-                <button className="mt-3 w-full text-center bg-blue-600 text-white text-sm py-1.5 rounded-md hover:bg-blue-700 transition">
-                  View Details
-                </button>
+                  {/* City + Rating Row */}
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="bg-blue-100 text-blue-700 text-xs px-2 py-[2px] rounded-md">
+                      {hotel.city}
+                    </span>
+
+                    <div className="flex items-center text-sm text-gray-700">
+                      <IoIosStar className="text-amber-400 mr-1" />
+                      <span>{hotel.rating}</span>
+                    </div>
+                  </div>
+
+                  {/* View Details CTA */}
+                  <button
+                    className="mt-3 w-full text-center bg-blue-600 text-white text-sm py-1.5 rounded-md hover:bg-blue-700 transition"
+                    onClick={() =>
+                      navigate(`/hotel/${hotel.id}`, {
+                        state: {
+                          startDate: dateRange[0].startDate.toISOString(),
+                          endDate: dateRange[0].endDate.toISOString(),
+                          guests,
+                        },
+                      })
+                    }
+                  >
+                    View Details
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
       <section className="px-4 py-12">
-        <h2 className="text-2xl font-semibold text-[#00264d] mb-6 text-center md:text-left">
+        <h2 className="text-xl font-semibold text-[#00264d] mb-6 text-center md:text-left">
           Our Achievements
         </h2>
 
@@ -379,6 +404,37 @@ function HomePage() {
             <button className="mt-4 md:mt-0 bg-white text-[#00264d] px-6 py-3 rounded-full font-medium flex items-center hover:bg-gray-100 transition">
               Start Booking <FaArrowRight className="ml-2" />
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="px-4 py-12 ">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl font-semibold text-[#00264d] mb-6 text-center">
+            Frequently Asked Questions
+          </h2>
+          <div className="space-y-4">
+            {faqs.map((faq, idx) => (
+              <div key={idx} className="">
+                <button
+                  className="w-full flex justify-between items-center px-6 py-4 text-left focus:outline-none"
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                >
+                  <span className="font-medium text-[#00264d]">
+                    {faq.question}
+                  </span>
+                  <span className="text-blue-600 text-2xl">
+                    {openFaq === idx ? "-" : "+"}
+                  </span>
+                </button>
+                {openFaq === idx && (
+                  <div className="px-6 pb-4 text-gray-700 text-sm">
+                    {faq.answer}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </section>

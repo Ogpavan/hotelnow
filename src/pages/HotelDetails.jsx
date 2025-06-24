@@ -1,303 +1,326 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
-import { FaMapMarkerAlt, FaWifi, FaSwimmer, FaUtensils } from "react-icons/fa";
-import { IoIosStar } from "react-icons/io";
-
-const amenitiesList = [
-  { icon: <FaWifi />, label: "Free Wi-Fi" },
-  { icon: <FaSwimmer />, label: "Pool" },
-  { icon: <FaUtensils />, label: "Restaurant" },
-];
-
-const tabs = ["about", "reviews"];
-
-function ImageSlider({ images }) {
-  const [current, setCurrent] = useState(0);
-  if (!images || images.length === 0) return null;
-
-  return (
-    <div className="relative rounded-lg overflow-hidden shadow-md">
-      <img
-        src={images[current]}
-        alt={`Slide ${current + 1}`}
-        className="w-full h-[400px] object-cover"
-      />
-      {images.length > 1 && (
-        <>
-          <button
-            onClick={() =>
-              setCurrent((prev) => (prev === 0 ? images.length - 1 : prev - 1))
-            }
-            className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow-md hover:bg-white"
-          >
-            {"<"}
-          </button>
-          <button
-            onClick={() =>
-              setCurrent((prev) => (prev === images.length - 1 ? 0 : prev + 1))
-            }
-            className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow-md hover:bg-white"
-          >
-            {">"}
-          </button>
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
-            {images.map((_, idx) => (
-              <span
-                key={idx}
-                className={`w-3 h-3 rounded-full cursor-pointer ${
-                  idx === current ? "bg-blue-600" : "bg-gray-300"
-                }`}
-                onClick={() => setCurrent(idx)}
-              />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-// Trustable Booking Popup
-function BookingPopup({ open, onClose, onSubmit }) {
-  const [name, setName] = useState("");
-  const [number, setNumber] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSubmitted(true);
-    if (name && number.match(/^[6-9]\d{9}$/)) {
-      onSubmit({ name, number });
-    }
-  };
-
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 relative border border-blue-100">
-        <button
-          className="absolute top-3 right-4 text-gray-400 hover:text-gray-700 text-2xl"
-          onClick={onClose}
-          aria-label="Close"
-        >
-          ×
-        </button>
-        <div className="flex items-center gap-2 mb-4">
-          <img
-            src="https://img.icons8.com/color/48/verified-badge.png"
-            alt="Verified"
-            className="w-8 h-8"
-          />
-          <h2 className="text-xl font-bold text-blue-700">
-            Book with Confidence
-          </h2>
-        </div>
-        <p className="text-gray-600 mb-4 text-sm">
-          Your details are{" "}
-          <span className="font-semibold text-green-700">100% safe</span> and
-          encrypted. We never share your information.
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Full Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="Enter your name"
-            />
-            {submitted && !name && (
-              <span className="text-xs text-red-500">Name is required.</span>
-            )}
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Mobile Number <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="tel"
-              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
-              value={number}
-              onChange={(e) => setNumber(e.target.value)}
-              required
-              pattern="[6-9]\d{9}"
-              placeholder="10-digit Indian mobile number"
-            />
-            {submitted && !number.match(/^[6-9]\d{9}$/) && (
-              <span className="text-xs text-red-500">
-                Enter a valid 10-digit Indian mobile number.
-              </span>
-            )}
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
-          >
-            Confirm Booking
-          </button>
-        </form>
-        <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
-          <img
-            src="https://img.icons8.com/fluency/24/lock-2.png"
-            alt="Secure"
-            className="w-5 h-5"
-          />
-          <span>
-            Your data is protected with{" "}
-            <span className="font-semibold text-blue-700">
-              256-bit SSL encryption
-            </span>
-            .
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
+import {
+  FaMapMarkerAlt,
+  FaStar,
+  FaRupeeSign,
+  FaWifi,
+  FaCar,
+  FaSwimmingPool,
+  FaCheck,
+  FaHeart,
+  FaShare,
+  FaChevronLeft,
+  FaChevronRight,
+  FaPhone,
+  FaEnvelope,
+  FaGlobe,
+} from "react-icons/fa";
 
 function HotelDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [hotel, setHotel] = useState(null);
-  const [tab, setTab] = useState("about");
-  const [showPopup, setShowPopup] = useState(false);
-  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showFullDescription, setShowFullDescription] = useState(false);
+
+  // Get booking details from location state (passed from hotel list)
+  const { startDate, endDate, guests } = location.state || {};
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  // Fetch hotel data when component mounts
+  useEffect(() => {
     const fetchHotel = async () => {
-      const docRef = doc(db, "hotels", id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setHotel({ id: docSnap.id, ...docSnap.data() });
+      if (!id) {
+        setError("Hotel ID not provided");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const hotelDoc = doc(db, "hotels", id);
+        const hotelSnap = await getDoc(hotelDoc);
+
+        if (hotelSnap.exists()) {
+          const hotelData = { id: hotelSnap.id, ...hotelSnap.data() };
+          setHotel(hotelData);
+        } else {
+          setError("Hotel not found");
+        }
+      } catch (err) {
+        console.error("Error fetching hotel:", err);
+        setError("Failed to load hotel details");
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchHotel();
   }, [id]);
 
-  const handleBooking = (user) => {
-    setShowPopup(false);
-    setBookingSuccess(true);
-    setTimeout(() => setBookingSuccess(false), 3500);
-    // Here you can also send booking data to your backend or Firestore
+  const nextImage = () => {
+    if (hotel?.image && hotel.image.length > 1) {
+      setCurrentImageIndex((prev) =>
+        prev === hotel.image.length - 1 ? 0 : prev + 1
+      );
+    }
   };
 
-  if (!hotel) return <div className="text-center py-10">Loading...</div>;
-  const images = Array.isArray(hotel.image) ? hotel.image : [hotel.image];
+  const prevImage = () => {
+    if (hotel?.image && hotel.image.length > 1) {
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? hotel.image.length - 1 : prev - 1
+      );
+    }
+  };
+
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<FaStar key={i} className="text-yellow-400 text-xs" />);
+    }
+
+    if (hasHalfStar) {
+      stars.push(
+        <FaStar key="half" className="text-yellow-400 opacity-50 text-xs" />
+      );
+    }
+
+    return stars;
+  };
+
+  const calculateDiscount = () => {
+    if (!hotel?.originalPrice || !hotel?.price) return 0;
+    return Math.round(
+      ((hotel.originalPrice - hotel.price) / hotel.originalPrice) * 100
+    );
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  // Ensure image is an array
+  const hotelImages = Array.isArray(hotel?.image)
+    ? hotel.image
+    : typeof hotel?.image === "string"
+    ? [hotel.image]
+    : [
+        "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-sm">Loading hotel details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !hotel) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 text-base mb-4">
+            {error || "Hotel not found"}
+          </p>
+          <button
+            onClick={handleGoBack}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 text-sm rounded"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <BookingPopup
-        open={showPopup}
-        onClose={() => setShowPopup(false)}
-        onSubmit={handleBooking}
-      />
-      {bookingSuccess && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 font-semibold">
-          Booking Confirmed! Our team will contact you soon.
-        </div>
-      )}
-      <div className="lg:flex lg:gap-12">
-        {/* Left Column: Images */}
-        <div className="lg:w-3/5">
-          <ImageSlider images={images} />
-        </div>
-
-        {/* Right Column: Info & Booking */}
-        <div className="lg:w-2/5 sticky top-24 mt-6 lg:mt-0 self-start bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-3xl font-bold text-[#00264d]">{hotel.name}</h1>
-          <div className="flex items-center text-gray-600 mt-2">
-            <FaMapMarkerAlt className="mr-2" />
-            {hotel.location}
-          </div>
-          <div className="flex items-center mt-2 text-green-700">
-            <IoIosStar className="text-yellow-400 mr-1" />
-            <span className="font-medium">{hotel.rating}/5</span>
-            <span className="text-gray-500 ml-2">
-              ({hotel.reviews} reviews)
-            </span>
-          </div>
-
-          {/* Amenities */}
-          <div className="mt-6 grid grid-cols-3 gap-4 text-center text-gray-700 text-sm">
-            {amenitiesList.map((a) => (
-              <div key={a.label} className="flex flex-col items-center gap-1">
-                <div className="text-xl">{a.icon}</div>
-                <span>{a.label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Price & Booking */}
-          <div className="mt-8 border-t pt-6">
-            <div className="text-sm line-through text-gray-400">
-              ₹{hotel.originalPrice}
-            </div>
-            <div className="text-3xl font-bold text-gray-900">
-              ₹{hotel.price}
-            </div>
-            <p className="text-xs text-gray-500 mb-4">+ ₹250 GST</p>
-            <button
-              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
-              onClick={() => setShowPopup(true)}
-            >
-              Book Now
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <button
+            onClick={handleGoBack}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 text-xs"
+          >
+            <FaChevronLeft />
+            Back to Hotels
+          </button>
+          <div className="flex items-center gap-4">
+            <button className="p-2 rounded-full hover:bg-gray-100">
+              <FaShare className="text-gray-600 text-xs" />
+            </button>
+            <button className="p-2 rounded-full hover:bg-gray-100">
+              <FaHeart className="text-gray-600 text-xs" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Tabs Section */}
-      <div className="mt-12 border-b">
-        <nav className="flex space-x-8 text-gray-600 text-sm font-semibold">
-          {tabs.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`pb-3 ${
-                tab === t
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "hover:text-blue-600"
-              }`}
-            >
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      <div className="mt-6 max-w-4xl mx-auto text-gray-700">
-        {tab === "about" && <p>{hotel.description}</p>}
-
-        {tab === "reviews" && (
-          <div className="space-y-6">
-            {[1, 2].map((r) => (
-              <div key={r} className="border-b pb-4">
-                <p className="font-medium">User {r}</p>
-                <p className="text-sm text-gray-600">
-                  Great location and clean rooms. Would definitely stay again!
-                </p>
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Image Slider & Thumbnails */}
+          <div className="lg:w-1/2 w-full">
+            <div className="relative   overflow-hidden h-64 sm:h-80 bg-gray-100">
+              {hotelImages.length > 0 && (
+                <img
+                  src={hotelImages[currentImageIndex]}
+                  alt={hotel.name}
+                  className="w-full h-full object-cover transition-all duration-300"
+                />
+              )}
+              {/* Slider Controls */}
+              {hotelImages.length > 1 && (
+                <>
+                  <button
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-1 text-xs"
+                    onClick={prevImage}
+                  >
+                    <FaChevronLeft />
+                  </button>
+                  <button
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-1 text-xs"
+                    onClick={nextImage}
+                  >
+                    <FaChevronRight />
+                  </button>
+                </>
+              )}
+              {/* Image count */}
+              <span className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-0.5 rounded">
+                {currentImageIndex + 1} / {hotelImages.length}
+              </span>
+            </div>
+            {/* Thumbnails */}
+            {hotelImages.length > 1 && (
+              <div className="flex gap-2 mt-3">
+                {hotelImages.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={`thumb-${idx}`}
+                    className={`w-20 h-16 object-cover rounded cursor-pointer border ${
+                      currentImageIndex === idx
+                        ? "border-blue-600"
+                        : "border-gray-200"
+                    }`}
+                    onClick={() => setCurrentImageIndex(idx)}
+                  />
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Google Map */}
-      <div className="mt-12 max-w-4xl mx-auto rounded-lg overflow-hidden shadow-lg">
-        <iframe
-          title="Google Maps"
-          className="w-full h-96"
-          src={`https://www.google.com/maps?q=${encodeURIComponent(
-            hotel.location
-          )}&output=embed`}
-          loading="lazy"
-        />
+          {/* Book Now Card */}
+          <div className="lg:w-1/2 w-full relative">
+            <div className="sticky top-24">
+              <div className="bg-white   shadow-lg border border-gray-100 p-5 text-xs">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">
+                    {hotel.city}
+                  </span>
+                  <span className="flex items-center text-amber-500 font-semibold text-xs">
+                    <FaStar className="mr-1" />
+                    {hotel.rating}
+                  </span>
+                </div>
+                <h2 className="text-base font-semibold text-[#00264d] mb-1">
+                  {hotel.name}
+                </h2>
+                <div className="flex items-center text-gray-500 mb-2 text-xs">
+                  <FaMapMarkerAlt className="mr-1" />
+                  <span className="truncate">{hotel.location}</span>
+                </div>
+                <div className="flex gap-2 mb-2 items-end">
+                  <span className="text-gray-700 line-through text-xs">
+                    ₹{hotel.originalPrice}
+                  </span>
+                  <span className="text-lg font-bold text-blue-700">
+                    ₹{hotel.price}
+                  </span>
+                  <span className="text-gray-400 text-xs">+ ₹250 GST</span>
+                </div>
+                <div className="mb-2">
+                  <span className="text-gray-600">Check-in:</span>{" "}
+                  <span className="font-medium">{formatDate(startDate)}</span>
+                </div>
+                <div className="mb-2">
+                  <span className="text-gray-600">Check-out:</span>{" "}
+                  <span className="font-medium">{formatDate(endDate)}</span>
+                </div>
+                <div className="mb-4">
+                  <span className="text-gray-600">Guests:</span>{" "}
+                  <span className="font-medium">{guests || 1}</span>
+                </div>
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold text-xs transition">
+                  Book Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Hotel Details */}
+        <div className="mt-8 bg-white   shadow border border-gray-100 p-6 text-xs">
+          <h3 className="text-base font-semibold text-[#00264d] mb-2">
+            About this hotel
+          </h3>
+          <p className="text-gray-700 whitespace-pre-line mb-4">
+            {showFullDescription
+              ? hotel.description
+              : hotel.description.slice(0, 350) +
+                (hotel.description.length > 350 ? "..." : "")}
+          </p>
+          {hotel.description.length > 350 && (
+            <button
+              className="text-blue-600 text-xs underline"
+              onClick={() => setShowFullDescription((v) => !v)}
+            >
+              {showFullDescription ? "Show less" : "Read more"}
+            </button>
+          )}
+
+          <div className="mt-6">
+            <h4 className="font-semibold text-[#00264d] mb-2 text-xs">
+              Amenities
+            </h4>
+            <ul className="flex flex-wrap gap-2">
+              {hotel.amenities &&
+                hotel.amenities.map((a, i) => (
+                  <li
+                    key={i}
+                    className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs"
+                  >
+                    {a}
+                  </li>
+                ))}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
