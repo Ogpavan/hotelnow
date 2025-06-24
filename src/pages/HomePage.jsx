@@ -255,19 +255,31 @@ function HomePage() {
 
       <section className="px-4 py-10">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl  poppins-semibold text-gray-800">
-            Top Hotels
-          </h2>
-          <div className="space-x-1 hidden sm:flex md:mr-5">
+          <h2 className="text-xl poppins-semibold text-gray-800">Top Hotels</h2>
+          {/* Always show arrows, but style for mobile */}
+          <div className="space-x-1 flex md:mr-5">
             <button
               onClick={() => scroll("left")}
-              className="text-gray-600 hover:text-gray-800 transition"
+              className="text-gray-600 hover:text-gray-800 transition bg-white rounded-full shadow md:shadow-none p-1 md:p-0 fixed md:static left-2 bottom-8 z-20 md:relative md:left-0 md:bottom-0"
+              style={{
+                position: "sticky",
+                left: 0,
+                // background: "#fff",
+                // boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                marginRight: "4px",
+              }}
             >
               <CiCircleChevLeft className="w-8 h-8 text-gray-600 hover:text-gray-800" />
             </button>
             <button
               onClick={() => scroll("right")}
-              className="text-gray-600 hover:text-gray-800 transition"
+              className="text-gray-600 hover:text-gray-800 transition bg-white rounded-full shadow md:shadow-none p-1 md:p-0 fixed md:static right-2 bottom-8 z-20 md:relative md:right-0 md:bottom-0"
+              style={{
+                position: "sticky",
+                right: 0,
+                // background: "#fff",
+                // boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              }}
             >
               <CiCircleChevRight className="w-8 h-8" />
             </button>
@@ -276,10 +288,10 @@ function HomePage() {
 
         <div
           ref={scrollRef}
-          className="flex overflow-x-auto space-x-6 hide-scrollbar scroll-smooth"
+          className="flex overflow-x-auto space-x-6 hide-scrollbar scroll-smooth pb-2"
+          style={{ WebkitOverflowScrolling: "touch" }}
         >
           {hotels.map((hotel, index) => {
-            // Ensure hotel.image is always an array
             const images = Array.isArray(hotel.image)
               ? hotel.image
               : hotel.image
@@ -289,7 +301,7 @@ function HomePage() {
             return (
               <div
                 key={hotel.id || index}
-                className="w-[280px] bg-white rounded-xl overflow-hidden border border-gray-200"
+                className="w-[280px] min-w-[280px] bg-white rounded-xl overflow-hidden border border-gray-200 flex-shrink-0"
               >
                 {/* Hotel Image */}
                 <div className="relative w-full h-44">
